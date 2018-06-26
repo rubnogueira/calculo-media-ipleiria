@@ -145,8 +145,8 @@ def start_capture():
             media = float(ects[i]['totalvalue'] / ects[i]['totalects'])
             print("Media %s ano: %.2f valores" % (str(i),media))
 
-            totalmedia += media
-            totalyears += 1
+            totalmedia += media * ects[i]['totalects']
+            totalyears += ects[i]['totalects']
 
         print("Média Global: %.2f valores" % (float(totalmedia/totalyears)))
         
