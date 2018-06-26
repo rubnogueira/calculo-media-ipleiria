@@ -36,7 +36,7 @@ def login():
 
         info = s.post('http://estudantes.ipleiria.pt/_layouts/Usi.IPLeiria.CustomPages/' + endpoint,headers=headers,data=data).text
         if check_login(info):
-            print("Login failed")
+            print("Login falhou")
             exit(1)
             return False
         else:
@@ -74,10 +74,12 @@ def start_capture():
     try:
         course = re.compile('"_text":"(.+?)"').findall(info)[0]
         course = course.split(' - ')
+        courseid = course[0]
         course.pop(0)
         course = ' - '.join(course)
     except:
         course = ''
+        courseid = ''
 
     temp = re.compile('<tbody>(.+?)</tbody>').findall(info.replace('\n','').replace('\r','').replace('\t',''))[0]
 
@@ -92,7 +94,7 @@ def start_capture():
         mygrades.append(item)
         
 
-    course_link = all_courses(course)
+    course_link = all_courses(course,courseid)
     if course_link:
         uclink = s.get(course_link,headers=headers).text
         temp = re.compile('<h3>Plano curricular</h3>(.+?)</article>').findall(uclink.replace('\n','').replace('\r','').replace('\t',''))[0]
@@ -122,7 +124,7 @@ def start_capture():
         ects = {}
         for i in allcourse:
             if int(i['grade']) >= 10:
-                print("%sº ano - %s: %s valores" % (i['year'],i['name'],i['grade']))
+                print("%s ano - %s: %s valores" % (i['year'],i['name'],i['grade']))
 
                 if i['year'] not in ects:
                     ects[i['year']] = {}
@@ -139,7 +141,7 @@ def start_capture():
         
         for i in ects.keys():
             media = float(ects[i]['totalvalue'] / ects[i]['totalects'])
-            print("Media %sº ano: %.2f valores" % (str(i),media))
+            print("Media %s ano: %.2f valores" % (str(i),media))
 
             totalmedia += media
             totalyears += 1
@@ -147,10 +149,11 @@ def start_capture():
         print("Media Global: %.2f valores" % (float(totalmedia/totalyears)))
         
     else:
-        print("Listing of UCs not found :(")
+        print("Lista de UCs não encontrada :(")
     
 
-def all_courses(course):
+def all_courses(course,courseid):
+    print("A procurar codigo de curso...")
     headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate',
     'Accept-Language': 'en-US,en;q=0.9',
@@ -162,9 +165,21 @@ def all_courses(course):
 
     info = s.get('https://www.ipleiria.pt/cursos/course/type/licenciatura/',headers=headers).text
 
-    for x,y in re.compile('<a class="link block noicon" title="(.+?)" href="(.+?)">').findall(info):
+    regex = '<a class="link block noicon" title="(.+?)" href="(.+?)">'
+
+    #Caso o nome coincida
+    for x,y in re.compile(regex).findall(info):
         if course == x:
             return y
+
+    #Tentar encontrar o codigo do curso
+    for x,y in re.compile(regex).findall(info):
+        temp = s.get(y,headers=headers).text
+
+        pattern = re.compile('<h3>Código curso</h3><div >(.+?)</div>').findall(temp)[0]
+        if courseid in pattern:
+            return y
+        
     return None
     
 if __name__ == "__main__":
