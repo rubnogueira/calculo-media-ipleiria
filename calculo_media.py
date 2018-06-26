@@ -1,3 +1,5 @@
+# -*- coding: latin-1 -*-
+
 import re
 from random import randint
 
@@ -146,14 +148,14 @@ def start_capture():
             totalmedia += media
             totalyears += 1
 
-        print("Media Global: %.2f valores" % (float(totalmedia/totalyears)))
+        print("Média Global: %.2f valores" % (float(totalmedia/totalyears)))
         
     else:
-        print("Lista de UCs nÃ£o encontrada :(")
+        print("Lista de UCs não encontrada :(")
     
 
 def all_courses(course,courseid):
-    print("A procurar codigo de curso...")
+    print("A procurar código de curso...")
     headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate',
     'Accept-Language': 'en-US,en;q=0.9',
@@ -176,7 +178,7 @@ def all_courses(course,courseid):
     for x,y in re.compile(regex).findall(info):
         temp = s.get(y,headers=headers).text
 
-        pattern = re.compile('<h3>CÃ³digo curso</h3><div >(.+?)</div>').findall(temp)[0]
+        pattern = re.compile('<h3>Código curso</h3><div >(.+?)</div>').findall(temp)[0]
         if courseid in pattern:
             return y
         
