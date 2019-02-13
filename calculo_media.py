@@ -1,3 +1,4 @@
+#!/usr/env python
 # -*- coding: latin-1 -*-
 
 import re
@@ -8,11 +9,19 @@ try:
 except ImportError:
     print("Instale o modulo requests.\nUsage: python -m pip install requests")
     exit(1)
-    
+
+try:
+    from builtins import input
+except ImportError:
+    print("Instale o modulo future.\nUsage: python -m pip install future")
+    exit(1)
+
 s = requests.Session()
 USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36'
 USERNAME = input("Introduza o seu numero de utilizador: ")
+assert isinstance(USERNAME, str)
 PASSWORD = input("Introduza a sua password: ")
+assert isinstance(PASSWORD, str)
 
 def login():
     headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -57,7 +66,7 @@ def check_login(content):
 def start_capture():
     mygrades = []
     allcourse = []
-    
+
     headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate',
     'Accept-Language': 'en-US,en;q=0.9',
@@ -94,7 +103,6 @@ def start_capture():
         item['grade'] = raw[3]
         #item['done'] = raw[4]
         mygrades.append(item)
-        
 
     course_link = all_courses(course,courseid)
     if course_link:
@@ -103,7 +111,7 @@ def start_capture():
 
         for x in re.compile('<tr>(.+?)</tr>').findall(temp):
             item = {}
-            
+
             for y,z in re.compile('<td(.+?)>(.+?)</td>').findall(x):
                 if 'curricular_plan_cu_code' in y: item['number'] = z
                 elif 'curricular_plan_cu_title' in y: item['name'] = z
@@ -118,7 +126,7 @@ def start_capture():
                     if i['name'].lower() == item['name'].lower():
                         item['grade'] = i['grade']
                         item['year'] = i['year']
-                        
+
                 allcourse.append(item)
 
         #### verificacao das notas para media
@@ -140,7 +148,7 @@ def start_capture():
 
         totalmedia = 0
         totalyears = 0
-        
+
         for i in ects.keys():
             media = float(ects[i]['totalvalue'] / ects[i]['totalects'])
             print("Media %s ano: %.2f valores" % (str(i),media))
@@ -149,10 +157,8 @@ def start_capture():
             totalyears += ects[i]['totalects']
 
         print("Média Global: %.2f valores" % (float(totalmedia/totalyears)))
-        
     else:
         print("Lista de UCs não encontrada :(")
-    
 
 def all_courses(course,courseid):
     print("A procurar código de curso...")
@@ -181,8 +187,9 @@ def all_courses(course,courseid):
         pattern = re.compile('<h3>Código curso</h3><div >(.+?)</div>').findall(temp)[0]
         if courseid in pattern:
             return y
-        
+
     return None
-    
+
 if __name__ == "__main__":
     start_capture()
+
